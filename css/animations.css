@@ -1,0 +1,25 @@
+@keyframes pulse-active {
+    0%, 100% {
+        box-shadow: 0 4px 30px var(--color-active-glow),
+                    inset 0 -3px 8px rgba(0,0,0,0.2);
+    }
+    50% {
+        box-shadow: 0 4px 50px var(--color-active-glow),
+                    0 0 80px var(--color-active-pulse),
+                    inset 0 -3px 8px rgba(0,0,0,0.2);
+    }
+}
+
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+}
+
+@keyframes on-air-blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

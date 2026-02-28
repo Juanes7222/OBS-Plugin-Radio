@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Voz de la Verdad — Panel de Control</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <div id="on-air-bar"></div>
+
+    <div id="app">
+        <div id="connection-status" class="disconnected">
+            <span id="connection-dot"></span>
+            <span id="connection-text">Desconectado</span>
+        </div>
+
+        <button id="main-button" disabled>
+            <span class="btn-icon">⏻</span>
+            <span class="btn-label">SIN CONEXIÓN</span>
+            <span class="btn-sublabel">Esperando OBS...</span>
+        </button>
+
+        <div id="status-info">
+            <span id="air-timer">00:00:00</span>
+            <span id="status-text">Conectando con OBS WebSocket...</span>
+        </div>
+    </div>
+
+    <div id="footer">La Voz de la Verdad — Panel de Control v1.0</div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
