@@ -1,14 +1,8 @@
 export const CONFIG = {
-    WS_HOST: 'localhost',
-    WS_PORT: 4455,
-    WS_PASSWORD: 'mBWk6eBRejqMaFxB', //obs websocket plugin password
+    BACKEND_URL:      'https://lavozverdad.com',
+    PANEL_SECRET:     'uNlFEsIazXBTQcgUVx-du2Putz_ZlXZOdLVVOveIOTeCOUuoih3M74s-ROaRh_E7uxDOFxAVPqcz8PikME34Lw4phzyaheMYiVQZoCm34s',
+    POLL_INTERVAL_MS: 5000,
 
-    USE_NATIVE_STREAMING: true,
-
-    VENDOR_NAME: '',
-    RTMP_TARGET_NAME: '',
-
-    RECONNECT_INTERVAL_MS: 3000,
-    MAX_RECONNECT_ATTEMPTS: 0,
-    REQUEST_TIMEOUT_MS: 5000,
+    AGENT_URL:        'http://127.0.0.1:9876',
+    AGENT_SECRET:     'lavozverdad-agent-secret',
 };

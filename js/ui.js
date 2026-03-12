@@ -1,58 +1,54 @@
 import { DOM } from './state.js';
 
-export function updateConnectionUI(status) {
-    DOM.connectionStatus.className = status;
-
-    const labels = {
-        connected:    'Conectado a OBS',
-        disconnected: 'Desconectado',
-        connecting:   'Conectando...',
-    };
-    DOM.connectionText.textContent = labels[status] ?? status;
+export function updateRadioStatus(isLive, streamerName) {
+    DOM.radioStatus.className  = isLive ? 'live' : 'autodj';
+    DOM.statusDot.className    = isLive ? 'dot live' : 'dot autodj';
+    DOM.statusText.textContent = isLive
+        ? `EN VIVO${streamerName ? ' — ' + streamerName : ''}`
+        : 'AutoDJ';
 }
 
 export function updateButtonUI(buttonState) {
     const btn = DOM.mainButton;
-    btn.classList.remove('active', 'processing');
+    btn.classList.remove('active', 'processing', 'disabled');
     btn.disabled = false;
 
     const states = {
-        idle:       { icon: '▶',  label: 'INICIAR',      sublabel: 'Grabar + Emitir',     onAir: false, cls: null },
-        active:     { icon: '⏹',  label: 'AL AIRE',      sublabel: 'Clic para detener',   onAir: true,  cls: 'active' },
-        processing: { icon: null, label: 'PROCESANDO',   sublabel: 'Espere...',           onAir: null,  cls: 'processing' },
-        disabled:   { icon: '⏻',  label: 'SIN CONEXIÓN', sublabel: 'Esperando OBS...',    onAir: false, cls: null },
+        idle:       { icon: '▶', label: 'SALIR AL AIRE',  sublabel: 'Iniciar emisión' },
+        active:     { icon: '⏹', label: 'AL AIRE',        sublabel: 'Clic para detener' },
+        processing: { icon: '…', label: 'PROCESANDO',     sublabel: 'Espere...' },
+        'no-agent': { icon: '⚠', label: 'SIN AGENTE',     sublabel: 'Inicia radio-agent' },
     };
 
     const cfg = states[buttonState];
     if (!cfg) return;
 
-    if (cfg.cls)      btn.classList.add(cfg.cls);
-    if (buttonState === 'disabled') btn.disabled = true;
+    if (buttonState === 'active')     btn.classList.add('active');
+    if (buttonState === 'processing') { btn.classList.add('processing'); btn.disabled = true; }
+    if (buttonState === 'no-agent')   { btn.classList.add('disabled');   btn.disabled = true; }
 
-    if (buttonState === 'processing') {
-        btn.querySelector('.btn-icon').innerHTML = '<span class="spinner"></span>';
-    } else {
-        btn.querySelector('.btn-icon').textContent = cfg.icon;
-    }
-
+    btn.querySelector('.btn-icon').textContent     = cfg.icon;
     btn.querySelector('.btn-label').textContent    = cfg.label;
     btn.querySelector('.btn-sublabel').textContent = cfg.sublabel;
 
-    if (cfg.onAir !== null) {
-        DOM.onAirBar.classList.toggle('visible', cfg.onAir);
-    }
+    document.getElementById('on-air-bar').classList.toggle('visible', buttonState === 'active');
 }
 
-export function updateStatusText(text, type = 'normal') {
-    DOM.statusInfo.className   = type === 'normal' ? '' : type;
-    DOM.statusText.textContent = text;
+export function updateNowPlaying({ currentSong, currentArtist, listeners }) {
+    DOM.songTitle.textContent  = currentSong   ?? '—';
+    DOM.songArtist.textContent = currentArtist ?? '—';
+    DOM.listeners.textContent  = listeners     ?? 0;
+}
+
+export function updateStatusMessage(text, type = 'normal') {
+    DOM.statusInfo.className      = type === 'normal' ? '' : type;
+    DOM.statusMessage.textContent = text;
 }
 
 export function detectTheme() {
     const probe = document.createElement('div');
     probe.style.cssText = 'position:fixed;width:1px;height:1px;top:-1px;left:-1px;background:inherit;pointer-events:none;';
     document.body.appendChild(probe);
-
     const bg = getComputedStyle(probe).backgroundColor;
     document.body.removeChild(probe);
 

@@ -21,10 +21,10 @@ export function stopTimer() {
 }
 
 function formatElapsed(ms) {
-    const totalSeconds = Math.floor(ms / 1000);
-    const hours   = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+    const total   = Math.floor(ms / 1000);
+    const hours   = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const seconds = total % 60;
     return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 }
 
