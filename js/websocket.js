@@ -77,7 +77,7 @@ function dispatchMessage(rawData) {
     }
 }
 
-async function onHello(data) {
+function onHello(data) {
     // eventSubscriptions: General(1) + Outputs(64) + Vendors(512) = 577
     const identifyPayload = { rpcVersion: 1, eventSubscriptions: 577 };
 
@@ -88,7 +88,7 @@ async function onHello(data) {
 
     if (data.authentication) {
         try {
-            identifyPayload.authentication = await generateAuthString(
+            identifyPayload.authentication = generateAuthString(
                 CONFIG.WS_PASSWORD,
                 data.authentication.salt,
                 data.authentication.challenge

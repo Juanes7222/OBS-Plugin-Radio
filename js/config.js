@@ -1,12 +1,12 @@
 export const CONFIG = {
     WS_HOST: 'localhost',
     WS_PORT: 4455,
-    WS_PASSWORD: '',
+    WS_PASSWORD: 'mBWk6eBRejqMaFxB', //obs websocket plugin password
 
-    VENDOR_NAME: 'obs-multi-rtmp',
+    USE_NATIVE_STREAMING: true,
+
+    VENDOR_NAME: '',
     RTMP_TARGET_NAME: '',
-
-    USE_NATIVE_STREAMING: false,
 
     RECONNECT_INTERVAL_MS: 3000,
     MAX_RECONNECT_ATTEMPTS: 0,
