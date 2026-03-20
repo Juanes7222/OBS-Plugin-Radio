@@ -14,24 +14,33 @@
     <div id="on-air-bar"></div>
 
     <div id="app">
-        <div id="connection-status" class="disconnected">
-            <span id="connection-dot"></span>
-            <span id="connection-text">Desconectado</span>
+        <div id="status-indicator" class="disconnected">
+            <span id="status-dot"></span>
+            <span id="status-label">butt desconectado</span>
         </div>
 
         <button id="main-button" disabled>
-            <span class="btn-icon">⏻</span>
-            <span class="btn-label">SIN CONEXIÓN</span>
-            <span class="btn-sublabel">Esperando OBS...</span>
+            <span class="btn-icon">&#x25B6;</span>
+            <span class="btn-label">INICIAR</span>
+            <span class="btn-sublabel">Transmitir a AzuraCast</span>
         </button>
 
-        <div id="status-info">
+        <div id="air-timer-wrap">
             <span id="air-timer">00:00:00</span>
-            <span id="status-text">Conectando con OBS WebSocket...</span>
+        </div>
+
+        <button id="mute-button" class="secondary-button" disabled>SILENCIAR</button>
+
+        <div id="meta-panel">
+            <span class="meta-label">METADATOS</span>
+            <input id="meta-title"  type="text" placeholder="Título" autocomplete="off" />
+            <input id="meta-artist" type="text" placeholder="Artista" autocomplete="off" />
+            <button id="send-meta" class="secondary-button">Enviar</button>
+            <span id="meta-status" class="meta-status"></span>
         </div>
     </div>
 
-    <div id="footer">La Voz de la Verdad — Panel de Control v1.0</div>
+    <div id="footer">La Voz de la Verdad — Panel de Control v2.0</div>
 
     <script src="dist/bundle.js"></script>
 </body>

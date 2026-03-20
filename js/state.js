@@ -1,29 +1,23 @@
 export const STATE = {
-    ws: null,
-    wsConnected: false,
-    wsIdentified: false,
-    reconnectTimer: null,
-    reconnectAttempts: 0,
+    isStreaming:   false,
+    isMuted:       false,
+    isProcessing:  false,
+    buttReachable: false,
 
-    isRecording: false,
-    isStreaming: false,
-    isRtmpActive: false,
-    isBroadcasting: false,
-    isProcessing: false,
-
-    airStartTime: null,
+    airStartTime:  null,
     timerInterval: null,
-
-    pendingRequests: new Map(),
-    requestCounter: 0,
 };
 
 export const DOM = {
-    connectionStatus: document.getElementById('connection-status'),
-    connectionText:   document.getElementById('connection-text'),
-    mainButton:       document.getElementById('main-button'),
-    statusInfo:       document.getElementById('status-info'),
-    statusText:       document.getElementById('status-text'),
-    airTimer:         document.getElementById('air-timer'),
-    onAirBar:         document.getElementById('on-air-bar'),
+    statusIndicator: document.getElementById('status-indicator'),
+    statusDot:       document.getElementById('status-dot'),
+    statusLabel:     document.getElementById('status-label'),
+    mainButton:      document.getElementById('main-button'),
+    muteButton:      document.getElementById('mute-button'),
+    titleInput:      document.getElementById('meta-title'),
+    artistInput:     document.getElementById('meta-artist'),
+    sendMetaButton:  document.getElementById('send-meta'),
+    metaStatus:      document.getElementById('meta-status'),
+    airTimer:        document.getElementById('air-timer'),
+    onAirBar:        document.getElementById('on-air-bar'),
 };

@@ -1,6 +1,6 @@
-/* ── Connection indicator ── */
+/* ── Status indicator ── */
 
-#connection-status {
+.indicator {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -11,10 +11,9 @@
     color: var(--color-text-secondary);
     letter-spacing: 0.5px;
     text-transform: uppercase;
-    transition: background var(--transition-normal), color var(--transition-normal);
 }
 
-#connection-dot {
+#status-dot {
     width: 8px;
     height: 8px;
     border-radius: var(--radius-full);
@@ -22,17 +21,17 @@
     transition: background var(--transition-normal), box-shadow var(--transition-normal);
 }
 
-#connection-status.connected #connection-dot {
+.indicator.connected #status-dot {
     background: #48bb78;
     box-shadow: 0 0 6px rgba(72, 187, 120, 0.6);
 }
 
-#connection-status.disconnected #connection-dot {
+.indicator.disconnected #status-dot {
     background: var(--color-error);
     box-shadow: 0 0 6px rgba(229, 62, 62, 0.5);
 }
 
-#connection-status.connecting #connection-dot {
+.indicator.connecting #status-dot {
     background: var(--color-connecting);
     box-shadow: 0 0 6px var(--color-connecting-glow);
     animation: pulse-dot 1.2s ease-in-out infinite;
@@ -41,53 +40,43 @@
 /* ── Main button ── */
 
 #main-button {
-    width: min(280px, 85vw);
-    height: min(280px, 85vw);
-    min-width: 160px;
-    min-height: 160px;
+    width: min(240px, 80vw);
+    height: min(240px, 80vw);
+    min-width: 140px;
+    min-height: 140px;
 
     border-radius: var(--radius-full);
     border: 4px solid transparent;
-
     background: var(--color-idle);
     color: #ffffff;
     box-shadow: 0 4px 24px var(--color-idle-glow), inset 0 -3px 8px rgba(0,0,0,0.15);
 
     font-family: var(--font-family);
-    font-size: clamp(16px, 4.5vw, 22px);
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    line-height: 1.3;
-
     cursor: pointer;
     outline: none;
     transition: background var(--transition-normal),
                 box-shadow var(--transition-normal),
-                transform var(--transition-fast),
-                border-color var(--transition-normal);
+                transform var(--transition-fast);
 
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 #main-button:hover:not(:disabled) { transform: scale(1.03); }
 #main-button:active:not(:disabled) { transform: scale(0.97); }
 
-#main-button .btn-icon    { font-size: clamp(36px, 10vw, 56px); line-height: 1; }
-#main-button .btn-label   { font-size: clamp(13px, 3.5vw, 17px); font-weight: 600; letter-spacing: 2px; }
-#main-button .btn-sublabel { font-size: clamp(9px, 2.2vw, 11px); font-weight: 400; opacity: 0.75; letter-spacing: 0.5px; }
+#main-button .btn-icon     { font-size: clamp(32px, 9vw, 48px); line-height: 1; }
+#main-button .btn-label    { font-size: clamp(13px, 3.5vw, 16px); font-weight: 700; letter-spacing: 2px; }
+#main-button .btn-sublabel { font-size: clamp(9px, 2vw, 11px); font-weight: 400; opacity: 0.75; letter-spacing: 0.5px; }
 
 #main-button.active {
     background: var(--color-active);
     box-shadow: 0 4px 30px var(--color-active-glow), inset 0 -3px 8px rgba(0,0,0,0.2);
     animation: pulse-active 2s ease-in-out infinite;
 }
-
-#main-button.active:hover { background: var(--color-active-hover); }
 
 #main-button.processing {
     background: var(--color-connecting);
@@ -103,47 +92,109 @@
     opacity: 0.6;
 }
 
-/* ── Status area ── */
+/* ── Air timer ── */
 
-#status-info {
-    text-align: center;
-    font-size: 11px;
-    color: var(--color-text-muted);
-    min-height: 34px;
+#air-timer-wrap {
+    min-height: 28px;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 2px;
-    transition: color var(--transition-normal);
+    justify-content: center;
 }
 
-#status-info.error   { color: var(--color-error); }
-#status-info.success { color: var(--color-success-text); }
-
 #air-timer {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     color: var(--color-text-primary);
     letter-spacing: 1px;
     opacity: 0;
-    max-height: 0;
-    overflow: hidden;
-    transition: opacity 400ms ease, max-height 400ms ease;
+    transition: opacity 400ms ease;
 }
 
-#air-timer.visible {
-    opacity: 1;
-    max-height: 40px;
+#air-timer.visible { opacity: 1; }
+
+/* ── Secondary button (mute, send meta) ── */
+
+.secondary-button {
+    padding: 9px 18px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255,255,255,0.1);
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    font-family: var(--font-family);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
 }
+
+.secondary-button:hover:not(:disabled) {
+    background: rgba(255,255,255,0.08);
+    color: var(--color-text-primary);
+}
+
+.secondary-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+#mute-button.muted {
+    background: rgba(229, 62, 62, 0.15);
+    color: var(--color-error);
+    border-color: rgba(229, 62, 62, 0.3);
+}
+
+/* ── Metadata panel ── */
+
+.meta-label {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    text-align: center;
+}
+
+#meta-panel input[type="text"] {
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255,255,255,0.08);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font-family: var(--font-family);
+    font-size: 13px;
+    outline: none;
+    transition: border-color var(--transition-fast);
+    user-select: text;
+    -webkit-user-select: text;
+}
+
+#meta-panel input[type="text"]:focus {
+    border-color: rgba(255,255,255,0.25);
+}
+
+#meta-panel input[type="text"]::placeholder {
+    color: var(--color-text-muted);
+}
+
+.meta-status {
+    font-size: 11px;
+    min-height: 16px;
+    text-align: center;
+    color: var(--color-text-muted);
+    transition: color var(--transition-fast);
+}
+
+.meta-status.success { color: var(--color-success-text); }
+.meta-status.error   { color: var(--color-error); }
 
 /* ── On-air bar ── */
 
 #on-air-bar {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    top: 0; left: 0; right: 0;
     height: 3px;
     background: var(--color-active);
     opacity: 0;
@@ -155,12 +206,12 @@
     animation: on-air-blink 1.5s ease-in-out infinite;
 }
 
-/* ── Processing spinner ── */
+/* ── Spinner ── */
 
 .spinner {
     display: inline-block;
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border: 4px solid rgba(255,255,255,0.25);
     border-top-color: #ffffff;
     border-radius: var(--radius-full);

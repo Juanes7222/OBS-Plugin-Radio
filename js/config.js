@@ -1,14 +1,8 @@
 export const CONFIG = {
-    WS_HOST: 'localhost',
-    WS_PORT: 4455,
-    WS_PASSWORD: 'mBWk6eBRejqMaFxB', //obs websocket plugin password
+    BUTT_BASE_URL: 'http://localhost:1256',
 
-    USE_NATIVE_STREAMING: true,
+    AGENT_BASE_URL: 'http://localhost:3000',
 
-    VENDOR_NAME: '',
-    RTMP_TARGET_NAME: '',
-
-    RECONNECT_INTERVAL_MS: 3000,
-    MAX_RECONNECT_ATTEMPTS: 0,
+    POLL_INTERVAL_MS: 2000,
     REQUEST_TIMEOUT_MS: 5000,
 };

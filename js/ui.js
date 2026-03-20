@@ -1,58 +1,58 @@
-import { DOM } from './state.js';
+import { STATE, DOM } from './state.js';
 
-export function updateConnectionUI(status) {
-    DOM.connectionStatus.className = status;
-
+export function updateIndicator(status) {
+    DOM.statusIndicator.className = `indicator ${status}`;
     const labels = {
-        connected:    'Conectado a OBS',
-        disconnected: 'Desconectado',
-        connecting:   'Conectando...',
+        connected:    'butt conectado',
+        disconnected: 'butt desconectado',
+        connecting:   'conectando...',
     };
-    DOM.connectionText.textContent = labels[status] ?? status;
+    DOM.statusLabel.textContent = labels[status] ?? status;
 }
 
-export function updateButtonUI(buttonState) {
+export function updateMainButton() {
     const btn = DOM.mainButton;
     btn.classList.remove('active', 'processing');
-    btn.disabled = false;
+    btn.disabled = STATE.isProcessing || !STATE.buttReachable;
 
-    const states = {
-        idle:       { icon: '▶',  label: 'INICIAR',      sublabel: 'Grabar + Emitir',     onAir: false, cls: null },
-        active:     { icon: '⏹',  label: 'AL AIRE',      sublabel: 'Clic para detener',   onAir: true,  cls: 'active' },
-        processing: { icon: null, label: 'PROCESANDO',   sublabel: 'Espere...',           onAir: null,  cls: 'processing' },
-        disabled:   { icon: '⏻',  label: 'SIN CONEXIÓN', sublabel: 'Esperando OBS...',    onAir: false, cls: null },
-    };
-
-    const cfg = states[buttonState];
-    if (!cfg) return;
-
-    if (cfg.cls)      btn.classList.add(cfg.cls);
-    if (buttonState === 'disabled') btn.disabled = true;
-
-    if (buttonState === 'processing') {
+    if (STATE.isProcessing) {
+        btn.classList.add('processing');
         btn.querySelector('.btn-icon').innerHTML = '<span class="spinner"></span>';
+        btn.querySelector('.btn-label').textContent    = 'PROCESANDO';
+        btn.querySelector('.btn-sublabel').textContent = 'Espere...';
+        return;
+    }
+
+    if (STATE.isStreaming) {
+        btn.classList.add('active');
+        btn.querySelector('.btn-icon').textContent     = '\u23F9';
+        btn.querySelector('.btn-label').textContent    = 'AL AIRE';
+        btn.querySelector('.btn-sublabel').textContent = 'Clic para detener';
     } else {
-        btn.querySelector('.btn-icon').textContent = cfg.icon;
+        btn.querySelector('.btn-icon').textContent     = '\u25B6';
+        btn.querySelector('.btn-label').textContent    = 'INICIAR';
+        btn.querySelector('.btn-sublabel').textContent = 'Transmitir a AzuraCast';
     }
 
-    btn.querySelector('.btn-label').textContent    = cfg.label;
-    btn.querySelector('.btn-sublabel').textContent = cfg.sublabel;
-
-    if (cfg.onAir !== null) {
-        DOM.onAirBar.classList.toggle('visible', cfg.onAir);
-    }
+    DOM.onAirBar.classList.toggle('visible', STATE.isStreaming);
 }
 
-export function updateStatusText(text, type = 'normal') {
-    DOM.statusInfo.className   = type === 'normal' ? '' : type;
-    DOM.statusText.textContent = text;
+export function updateMuteButton() {
+    DOM.muteButton.classList.toggle('muted', STATE.isMuted);
+    DOM.muteButton.textContent = STATE.isMuted ? 'SILENCIADO' : 'SILENCIAR';
+    DOM.muteButton.disabled    = !STATE.isStreaming || STATE.isProcessing;
+}
+
+export function showMetaStatus(message, type = 'normal') {
+    DOM.metaStatus.className   = `meta-status ${type}`;
+    DOM.metaStatus.textContent = message;
+    setTimeout(() => { DOM.metaStatus.textContent = ''; DOM.metaStatus.className = 'meta-status'; }, 3000);
 }
 
 export function detectTheme() {
     const probe = document.createElement('div');
     probe.style.cssText = 'position:fixed;width:1px;height:1px;top:-1px;left:-1px;background:inherit;pointer-events:none;';
     document.body.appendChild(probe);
-
     const bg = getComputedStyle(probe).backgroundColor;
     document.body.removeChild(probe);
 
