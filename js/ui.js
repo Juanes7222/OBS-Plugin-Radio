@@ -19,7 +19,9 @@ export function updateMainButton() {
         btn.classList.add('processing');
         btn.querySelector('.btn-icon').innerHTML = '<span class="spinner"></span>';
         btn.querySelector('.btn-label').textContent    = 'PROCESANDO';
-        btn.querySelector('.btn-sublabel').textContent = 'Espere...';
+        if (btn.querySelector('.btn-sublabel')) {
+            btn.querySelector('.btn-sublabel').textContent = 'Espere...';
+        }
         return;
     }
 
@@ -27,11 +29,15 @@ export function updateMainButton() {
         btn.classList.add('active');
         btn.querySelector('.btn-icon').textContent     = '\u23F9';
         btn.querySelector('.btn-label').textContent    = 'AL AIRE';
-        btn.querySelector('.btn-sublabel').textContent = 'Clic para detener';
+        if (btn.querySelector('.btn-sublabel')) {
+            btn.querySelector('.btn-sublabel').textContent = 'Clic para detener';
+        }
     } else {
         btn.querySelector('.btn-icon').textContent     = '\u25B6';
         btn.querySelector('.btn-label').textContent    = 'INICIAR';
-        btn.querySelector('.btn-sublabel').textContent = 'Transmitir a AzuraCast';
+        if (btn.querySelector('.btn-sublabel')) {
+            btn.querySelector('.btn-sublabel').textContent = 'Transmitir a AzuraCast';
+        }
     }
 
     DOM.onAirBar.classList.toggle('visible', STATE.isStreaming);
@@ -47,6 +53,13 @@ export function showMetaStatus(message, type = 'normal') {
     DOM.metaStatus.className   = `meta-status ${type}`;
     DOM.metaStatus.textContent = message;
     setTimeout(() => { DOM.metaStatus.textContent = ''; DOM.metaStatus.className = 'meta-status'; }, 3000);
+}
+
+export function showFbStatus(message, type = 'normal') {
+    if (!DOM.fbStatus) return;
+    DOM.fbStatus.className   = `meta-status ${type}`;
+    DOM.fbStatus.textContent = message;
+    setTimeout(() => { DOM.fbStatus.textContent = ''; DOM.fbStatus.className = 'meta-status'; }, 3000);
 }
 
 export function detectTheme() {

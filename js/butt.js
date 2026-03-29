@@ -1,39 +1,27 @@
 import { CONFIG } from './config.js';
 
-/** Returns butt's current status: { connected, muted, ... } */
-export async function fetchButtStatus() {
-    const res = await timedFetch(`${CONFIG.BUTT_BASE_URL}/`);
-    if (!res.ok) throw new Error(`butt status ${res.status}`);
-    return res.json();
-}
-
-export async function startStream() {
-    await buttPut('/stream', { action: 'start' });
-}
-
-export async function stopStream() {
-    await buttPut('/stream', { action: 'stop' });
-}
-
-/** Sends mute or unmute command to butt. */
-export async function setMute(muted) {
-    await buttPut('/mute', { action: muted ? 'mute' : 'unmute' });
-}
-
-/** Sends ICY metadata to the active stream. */
-export async function sendMetadata(title, artist) {
-    await buttPut('/song', { title, artist });
-}
-
-async function buttPut(path, body) {
-    const res = await timedFetch(`${CONFIG.BUTT_BASE_URL}${path}`, {
-        method:  'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(body),
+async function agentPost(path, body) {
+    const res = await fetch(`${CONFIG.AGENT_BASE_URL}${path}`, {
+        method:  'POST',
+        headers: body ? { 'Content-Type': 'application/json; charset=utf-8' } : {},
+        body:    body ? JSON.stringify(body) : undefined,
+        signal:  AbortSignal.timeout(CONFIG.REQUEST_TIMEOUT_MS),
     });
-    if (!res.ok) throw new Error(`butt ${path} → ${res.status}`);
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error ?? `Agent ${path} → ${res.status}`);
+    return data;
 }
 
-function timedFetch(url, options = {}) {
-    return fetch(url, { ...options, signal: AbortSignal.timeout(CONFIG.REQUEST_TIMEOUT_MS) });
+export async function fetchButtStatus() {
+    const res = await fetch(`${CONFIG.AGENT_BASE_URL}/butt/status`, {
+        signal: AbortSignal.timeout(CONFIG.REQUEST_TIMEOUT_MS),
+    });
+    if (!res.ok) throw new Error(`Agent /butt/status → ${res.status}`);
+    return res.json(); // { running, isStreaming, isMuted }
 }
+
+export const startStream  = ()              => agentPost('/butt/start');
+export const stopStream   = ()              => agentPost('/butt/stop');
+export const toggleMute   = ()              => agentPost('/butt/mute');
+export const sendMetadata = (title, artist) => agentPost('/butt/metadata', { title, artist });

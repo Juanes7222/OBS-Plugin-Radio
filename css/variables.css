@@ -1,37 +1,50 @@
 :root {
-    --color-bg: #1e1e2e;
-    --color-surface: #2a2a3c;
-    --color-text-primary: #e0e0e8;
-    --color-text-secondary: #a0a0b4;
-    --color-text-muted: #6c6c80;
+    --color-bg: #13141c;
+    --color-surface: #1e1f2b;
+    --color-surface-hover: #262838;
+    --color-border: #2e3042;
+    --color-text-primary: #f0f0f5;
+    --color-text-secondary: #abaec2;
+    --color-text-muted: #72768d;
 
-    --color-idle: #3a7bd5;
-    --color-idle-hover: #4a8be5;
-    --color-idle-glow: rgba(58, 123, 213, 0.35);
+    --color-idle: #3b82f6;
+    --color-idle-hover: #60a5fa;
+    --color-idle-glow: rgba(59, 130, 246, 0.4);
 
-    --color-active: #e53e3e;
-    --color-active-hover: #f04e4e;
-    --color-active-glow: rgba(229, 62, 62, 0.4);
-    --color-active-pulse: rgba(229, 62, 62, 0.15);
+    --color-active: #ef4444;
+    --color-active-hover: #f87171;
+    --color-active-glow: rgba(239, 68, 68, 0.5);
+    --color-active-pulse: rgba(239, 68, 68, 0.2);
 
-    --color-connecting: #d69e2e;
-    --color-connecting-glow: rgba(214, 158, 46, 0.35);
+    --color-connecting: #eab308;
+    --color-connecting-glow: rgba(234, 179, 8, 0.4);
 
-    --color-error: #e53e3e;
-    --color-success-text: #68d391;
+    --color-error: #ef4444;
+    --color-success-text: #22c55e;
+    --color-fb-ready: #10b981;
+    --color-fb-stop: #ef4444;
 
-    --font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    --transition-fast: 150ms ease;
-    --transition-normal: 300ms ease;
+    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 
     --radius-sm: 8px;
-    --radius-full: 50%;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-full: 9999px;
+    
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.02);
 }
 
 html.theme-light {
-    --color-bg: #f0f0f5;
+    --color-bg: #f8fafc;
     --color-surface: #ffffff;
-    --color-text-primary: #1a1a2e;
-    --color-text-secondary: #4a4a5e;
-    --color-text-muted: #8a8a9e;
+    --color-surface-hover: #f1f5f9;
+    --color-border: #e2e8f0;
+    --color-text-primary: #0f172a;
+    --color-text-secondary: #475569;
+    --color-text-muted: #94a3b8;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    --shadow-md: 0 8px 16px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.02);
 }

@@ -22,7 +22,6 @@
         <button id="main-button" disabled>
             <span class="btn-icon">&#x25B6;</span>
             <span class="btn-label">INICIAR</span>
-            <span class="btn-sublabel">Transmitir a AzuraCast</span>
         </button>
 
         <div id="air-timer-wrap">
@@ -38,9 +37,18 @@
             <button id="send-meta" class="secondary-button">Enviar</button>
             <span id="meta-status" class="meta-status"></span>
         </div>
+
+        <div id="fb-panel">
+            <span class="meta-label">FACEBOOK LIVE WEBHOOK</span>
+            <input id="fb-url" type="text" placeholder="URL del video (permalink_url)" autocomplete="off" />
+            <div class="panel-row">
+                <button id="fb-start" class="secondary-button btn-success">Notificar Live</button>
+                <button id="fb-stop" class="secondary-button btn-danger">Notificar Fin</button>
+            </div>
+            <span id="fb-status" class="meta-status"></span>
+        </div>
     </div>
 
-    <div id="footer">La Voz de la Verdad — Panel de Control v2.0</div>
 
     <script src="dist/bundle.js"></script>
 </body>

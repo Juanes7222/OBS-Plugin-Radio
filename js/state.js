@@ -20,4 +20,8 @@ export const DOM = {
     metaStatus:      document.getElementById('meta-status'),
     airTimer:        document.getElementById('air-timer'),
     onAirBar:        document.getElementById('on-air-bar'),
+    fbUrlInput:      document.getElementById('fb-url'),
+    fbStartBtn:      document.getElementById('fb-start'),
+    fbStopBtn:       document.getElementById('fb-stop'),
+    fbStatus:        document.getElementById('fb-status'),
 };

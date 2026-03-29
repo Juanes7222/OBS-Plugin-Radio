@@ -1,5 +1,4 @@
 export const CONFIG = {
-    BUTT_BASE_URL: 'http://localhost:1256',
 
     AGENT_BASE_URL: 'http://localhost:3000',
 
