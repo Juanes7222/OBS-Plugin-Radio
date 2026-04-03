@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "esbuild js/main.js --bundle --outfile=dist/bundle.js --format=iife",
-    "watch": "esbuild js/main.js --bundle --outfile=dist/bundle.js --format=iife --watch"
+    "build": "concurrently \"esbuild js/main.js --bundle --outfile=dist/bundle.js --format=iife\" \"npx tailwindcss -i ./css/input.css -o ./dist/output.css --minify\"",
+    "watch": "concurrently \"esbuild js/main.js --bundle --outfile=dist/bundle.js --format=iife --watch\" \"npx tailwindcss -i ./css/input.css -o ./dist/output.css --watch\""
   },
   "repository": {
     "type": "git",
@@ -20,6 +20,9 @@
   },
   "homepage": "https://github.com/Juanes7222/OBS-Plugin-Radio#readme",
   "devDependencies": {
-    "esbuild": "0.27.4"
+    "concurrently": "^9.2.1",
+    "daisyui": "^4.12.24",
+    "esbuild": "0.27.4",
+    "tailwindcss": "^3.4.19"
   }
 }

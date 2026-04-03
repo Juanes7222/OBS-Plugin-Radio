@@ -1,51 +1,55 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La Voz de la Verdad — Panel de Control</title>
-    <link rel="stylesheet" href="css/variables.css">
-    <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/animations.css">
-    <link rel="stylesheet" href="css/layout.css">
-    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="dist/output.css">
 </head>
-<body>
-    <div id="on-air-bar"></div>
+<body class="bg-base-300 min-h-screen p-3 font-sans text-base-content relative text-sm">
+    <div id="on-air-bar" class="off-air"></div>
 
-    <div id="app">
-        <div id="status-indicator" class="disconnected">
+    <div id="app" class="max-w-md mx-auto space-y-4">
+        <!-- Status Indicator -->
+        <div id="status-indicator" class="disconnected flex items-center justify-center p-2 rounded-box bg-base-200 shadow-sm border border-base-100">
             <span id="status-dot"></span>
-            <span id="status-label">butt desconectado</span>
+            <span id="status-label" class="font-medium text-xs tracking-wide">butt desconectado</span>
         </div>
 
-        <button id="main-button" disabled>
-            <span class="btn-icon">&#x25B6;</span>
+        <!-- Main Button -->
+        <button id="main-button" disabled class="btn btn-primary btn-block h-16 text-xl font-bold shadow-lg shadow-base-300/50 flex items-center justify-center gap-2 transition-all rounded-box">
+            <span class="btn-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
             <span class="btn-label">INICIAR</span>
         </button>
 
-        <div id="air-timer-wrap">
-            <span id="air-timer">00:00:00</span>
+        <!-- Air Timer -->
+        <div id="air-timer-wrap" class="card bg-neutral text-neutral-content shadow-xl text-center p-3">
+            <span id="air-timer" class="font-mono text-3xl font-bold tracking-widest text-primary-content">00:00:00</span>
         </div>
 
-        <button id="mute-button" class="secondary-button" disabled>SILENCIAR</button>
+        <!-- Mute Button -->
+        <button id="mute-button" disabled class="btn btn-sm btn-outline btn-block rounded-box text-sm font-bold">SILENCIAR</button>
 
-        <div id="meta-panel">
-            <span class="meta-label">METADATOS</span>
-            <input id="meta-title"  type="text" placeholder="Título" autocomplete="off" />
-            <input id="meta-artist" type="text" placeholder="Artista" autocomplete="off" />
-            <button id="send-meta" class="secondary-button">Enviar</button>
-            <span id="meta-status" class="meta-status"></span>
+        <div class="divider my-1 text-xs opacity-50">Configuración</div>
+
+        <!-- Meta Panel -->
+        <div id="meta-panel" class="card bg-base-200 shadow-xl p-4 space-y-2 border border-base-100">
+            <span class="meta-label text-[10px] uppercase font-bold text-base-content/70 tracking-wider">Metadatos</span>
+            <input id="meta-title" type="text" placeholder="Título" autocomplete="off" class="input input-sm input-bordered w-full" />
+            <input id="meta-artist" type="text" placeholder="Artista" autocomplete="off" class="input input-sm input-bordered w-full" />
+            <button id="send-meta" class="btn btn-sm btn-secondary w-full">Enviar Metadatos</button>
+            <span id="meta-status" class="meta-status text-xs text-center block text-success hidden">Enviado con éxito</span>
         </div>
 
-        <div id="fb-panel">
-            <span class="meta-label">FACEBOOK LIVE WEBHOOK</span>
-            <input id="fb-url" type="text" placeholder="URL del video (permalink_url)" autocomplete="off" />
-            <div class="panel-row">
-                <button id="fb-start" class="secondary-button btn-success">Notificar Live</button>
-                <button id="fb-stop" class="secondary-button btn-danger">Notificar Fin</button>
+        <!-- Facebook Panel -->
+        <div id="fb-panel" class="card bg-base-200 shadow-xl p-4 space-y-2 border border-base-100">
+            <span class="meta-label text-[10px] uppercase font-bold text-base-content/70 tracking-wider">Facebook Live Webhook</span>
+            <input id="fb-url" type="text" placeholder="URL del video (permalink_url)" autocomplete="off" class="input input-sm input-bordered w-full" />
+            <div class="flex gap-2">
+                <button id="fb-start" class="btn btn-sm btn-success flex-1 text-white text-xs">Notificar Live</button>
+                <button id="fb-stop" class="btn btn-sm btn-error flex-1 text-white text-xs">Notificar Fin</button>
             </div>
-            <span id="fb-status" class="meta-status"></span>
+            <span id="fb-status" class="meta-status text-xs text-center block text-success hidden"></span>
         </div>
     </div>
 

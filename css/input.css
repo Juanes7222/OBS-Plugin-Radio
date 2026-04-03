@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+#air-timer {
+    @apply opacity-30 transition-opacity duration-300;
+}
+#air-timer.visible {
+    @apply opacity-100;
+}
+#status-dot {
+    @apply inline-block w-3 h-3 rounded-full mr-2;
+}
+
+#status-indicator.connecting #status-dot {
+    @apply bg-warning animate-pulse;
+}
+
+#status-indicator.disconnected #status-dot {
+    @apply bg-error animate-pulse;
+}
+
+#status-indicator.connected #status-dot {
+    @apply bg-success;
+}
+
+/* On-air bar effect from original CSS */
+#on-air-bar {
+    @apply h-2 w-full fixed top-0 left-0 z-50 transition-colors duration-500 ease-in-out;
+}
+#on-air-bar.off-air { @apply bg-transparent; }
+#on-air-bar.on-air { @apply bg-error; box-shadow: 0 0 10px rgba(255, 0, 0, 0.8); }
+
+/* Main button icon and text */
+.btn-icon {
+    @apply inline-flex items-center transform transition-transform duration-300 text-2xl;
+}
+.btn-connected .btn-icon {
+    @apply text-error;
+    animation: pulse-soft 2s infinite;
+}
+
+@keyframes pulse-soft {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
