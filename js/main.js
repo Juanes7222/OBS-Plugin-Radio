@@ -84,6 +84,13 @@ async function sendFacebookWebhook(status) {
         return;
     }
 
+    const webhookSecret = CONFIG.WEBHOOK_SECRET;
+    if (!webhookSecret) {
+        applicationLogger.error('WEBHOOK_SECRET is not configured');
+        showFbStatus('Error de configuración', 'error');
+        return;
+    }
+
     try {
         const payload = {
             "object": "page",
@@ -101,7 +108,8 @@ async function sendFacebookWebhook(status) {
         const response = await fetch('https://lavozverdad.com/webhook/facebook', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-Webhook-Secret': webhookSecret
             },
             body: JSON.stringify(payload)
         });
