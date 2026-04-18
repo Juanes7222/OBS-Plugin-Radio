@@ -109,7 +109,7 @@ async function sendFacebookWebhook(status) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Webhook-Secret': webhookSecret
+                'x-webhook-secret': webhookSecret
             },
             body: JSON.stringify(payload)
         });
