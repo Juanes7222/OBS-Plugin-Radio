@@ -1,206 +1,161 @@
-import { STATE, DOM } from './state.js';
 import { CONFIG } from './config.js';
-import { fetchButtStatus, startStream, stopStream, sendMetadata } from './butt.js';
-import { launchButt } from './agent.js';
-import { updateIndicator, updateMainButton, updateMuteButton, showMetaStatus, showFbStatus, detectTheme } from './ui.js';
-import { startTimer, stopTimer } from './timer.js';
-import { applicationLogger } from './logger.js';
+import { STATE, isActiveStream } from './state.js';
+import { DOM } from './dom.js';
+import { fetchStatus, startStream, stopStream, sendMetadata, notifyFacebookLive } from './api.js';
+import { renderStatus, renderMainButton, showStatus } from './ui.js';
+import { loadAgentConfigView, loadSettings, setConfigLocked, wireSettings } from './settings.js';
+import { restoreDrafts, wireDraftPersistence } from './persist.js';
+import { syncTimer } from './timer.js';
 
-async function onMainButtonClick() {
-    applicationLogger.info('Main button clicked', { isProcessing: STATE.isProcessing, isStreaming: STATE.isStreaming });
-    if (STATE.isProcessing) return;
+let pollTimer = null;
+let pollInFlight = false;
+let failures = 0;
 
-    STATE.isProcessing = true;
-    updateMainButton();
+/** Working inputs that must survive dock reloads and OBS restarts. */
+const DRAFT_FIELDS = [
+    { key: 'title', element: DOM.titleInput },
+    { key: 'artist', element: DOM.artistInput },
+    { key: 'fbUrl', element: DOM.fbUrlInput },
+];
+
+function applyStatus(status) {
+    STATE.agentOnline = true;
+    STATE.streamState = status.state ?? 'idle';
+    STATE.streamDetail = status.detail ?? null;
+    STATE.engine = status.engine ?? STATE.engine;
+    STATE.configured = status.configured !== false;
+
+    syncTimer(STATE.streamState === 'live');
+    renderStatus();
+    renderMainButton();
+    setConfigLocked(isActiveStream());
+}
+
+function applyOffline() {
+    STATE.agentOnline = false;
+    STATE.streamState = 'idle';
+    STATE.streamDetail = null;
+
+    syncTimer(false);
+    renderStatus();
+    renderMainButton();
+    setConfigLocked(false);
+}
+
+function scheduleNextPoll() {
+    clearTimeout(pollTimer);
+
+    const delay = STATE.agentOnline
+        ? CONFIG.POLL_INTERVAL_MS
+        : Math.min(CONFIG.POLL_INTERVAL_MS * 2 ** failures, CONFIG.POLL_RETRY_MAX_MS);
+
+    pollTimer = setTimeout(poll, delay);
+}
+
+async function poll() {
+    if (pollInFlight) return;
+    pollInFlight = true;
 
     try {
-        if (STATE.isStreaming) {
-            applicationLogger.info('Stopping stream...');
-            await stopStream();
-            STATE.isStreaming = false;
-            stopTimer();
-            applicationLogger.info('Stream stopped.');
-        } else {
-            applicationLogger.info('Starting stream...');
-            await ensureButtReachable();
-            await startStream();
-            STATE.isStreaming = true;
-            startTimer();
-            applicationLogger.info('Stream started successfully.');
-        }
-    } catch (error) {
-        applicationLogger.error('Stream toggle error', error);
-        showMetaStatus(`Error: ${error.message}`, 'error');
-        await syncState();
+        applyStatus(await fetchStatus());
+        failures = 0;
+    } catch {
+        failures += 1;
+        applyOffline();
     } finally {
-        STATE.isProcessing = false;
-        updateMainButton();
-        updateMuteButton();
+        pollInFlight = false;
+        scheduleNextPoll();
     }
 }
 
-async function onMuteButtonClick() {
-    applicationLogger.info('Mute button clicked', { isStreaming: STATE.isStreaming, isMuted: STATE.isMuted });
-    if (!STATE.isStreaming || STATE.isProcessing) return;
+/** Polls right away instead of waiting for the next tick (after an action). */
+async function pollNow() {
+    clearTimeout(pollTimer);
+    await poll();
+}
+
+async function onMainButtonClick() {
+    if (STATE.isProcessing || !STATE.agentOnline) return;
+
+    const stopping = isActiveStream();
+    STATE.isProcessing = true;
+    renderMainButton();
+
     try {
-        const { isMuted } = await toggleMute();
-        STATE.isMuted = isMuted;
-        updateMuteButton();
-        applicationLogger.info(`Mute state toggled. New state: ${isMuted}`);
+        await (stopping ? stopStream() : startStream());
+        showStatus(DOM.metaStatus, stopping ? 'Transmisión detenida' : 'Transmisión iniciada');
     } catch (error) {
-        applicationLogger.error('Error toggling mute', error);
-        showMetaStatus(`Error al silenciar: ${error.message}`, 'error');
+        showStatus(DOM.metaStatus, `Error: ${error.message}`, 'error');
     }
+
+    // Keep the controls locked until the authoritative state comes back.
+    await pollNow();
+    STATE.isProcessing = false;
+    renderMainButton();
 }
 
 async function onSendMetaClick() {
-    applicationLogger.info('Send metadata button clicked');
-    const title  = DOM.titleInput.value.trim();
+    const title = DOM.titleInput.value.trim();
     const artist = DOM.artistInput.value.trim();
 
     if (!title && !artist) {
-        applicationLogger.warn('Attempted to send empty metadata');
-        showMetaStatus('Ingresa título o artista', 'error');
+        showStatus(DOM.metaStatus, 'Ingresa título o artista', 'error');
         return;
     }
 
+    DOM.sendMetaButton.disabled = true;
     try {
-        applicationLogger.debug('Sending metadata payload', { title, artist });
         await sendMetadata(title, artist);
-        showMetaStatus('Metadatos enviados', 'success');
-        applicationLogger.info('Metadata sent successfully');
+        showStatus(DOM.metaStatus, 'Metadatos enviados');
     } catch (error) {
-        applicationLogger.error('Error sending metadata', error);
-        showMetaStatus(`Error: ${error.message}`, 'error');
+        showStatus(DOM.metaStatus, `Error: ${error.message}`, 'error');
+    } finally {
+        DOM.sendMetaButton.disabled = false;
     }
 }
 
-async function sendFacebookWebhook(status) {
-    applicationLogger.info(`Sending Facebook webhook: ${status}`);
-    const url = DOM.fbUrlInput?.value.trim() ?? '';
-    if (!url) {
-        applicationLogger.warn('Attempted to send Facebook webhook without URL');
-        showFbStatus('Ingresa la URL de Facebook', 'error');
+async function notifyFacebookLiveStatus(status) {
+    const permalinkUrl = DOM.fbUrlInput.value.trim();
+    if (!permalinkUrl) {
+        showStatus(DOM.fbStatus, 'Ingresa la URL de Facebook', 'error');
         return;
     }
 
-    const webhookSecret = CONFIG.WEBHOOK_SECRET;
-    if (!webhookSecret) {
-        applicationLogger.error('WEBHOOK_SECRET is not configured');
-        showFbStatus('Error de configuración', 'error');
-        return;
-    }
-
+    const button = status === 'live' ? DOM.fbStartBtn : DOM.fbStopBtn;
+    button.disabled = true;
     try {
-        const payload = {
-            "object": "page",
-            "entry": [{
-                "changes": [{
-                    "field": "live_videos",
-                    "value": {
-                        "status": status,
-                        "permalink_url": url
-                    }
-                }]
-            }]
-        };
-
-        const response = await fetch('https://lavozverdad.com/webhook/facebook', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-webhook-secret': webhookSecret
-            },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            throw new Error(`Status ${response.status}`);
-        }
-
-        applicationLogger.info(`Facebook webhook ${status} sent successfully`);
-        showFbStatus('Notificación enviada', 'success');
+        await notifyFacebookLive(status, permalinkUrl);
+        showStatus(DOM.fbStatus, 'Notificación enviada');
     } catch (error) {
-        applicationLogger.error('Error sending Facebook webhook', error);
-        showFbStatus(`Error al notificar`, 'error');
+        showStatus(DOM.fbStatus, `Error: ${error.message}`, 'error');
+    } finally {
+        button.disabled = false;
     }
-}
-
-async function ensureButtReachable() {
-    applicationLogger.debug('Ensuring butt is reachable...');
-    try {
-        await fetchButtStatus();
-        applicationLogger.debug('butt is already reachable.');
-    } catch {
-        if (!CONFIG.AGENT_BASE_URL) {
-            applicationLogger.error('butt is not reachable and AGENT_BASE_URL is not configured.');
-            throw new Error('butt no está ejecutándose');
-        }
-        
-        applicationLogger.info('butt is not reachable. Attempting to start agent...');
-        updateIndicator('connecting');
-        await launchButt();
-        await waitForButt();
-        applicationLogger.info('Agent started and butt is reachable.');
-    }
-}
-
-async function waitForButt(attempts = 10, intervalMs = 600) {
-    for (let i = 0; i < attempts; i++) {
-        await new Promise(r => setTimeout(r, intervalMs));
-        try { await fetchButtStatus(); return; } catch { /* still starting */ }
-    }
-    throw new Error('butt no respondió tras iniciarse');
-}
-
-async function syncState() {
-    try {
-        const status = await fetchButtStatus();
-        applicationLogger.debug('syncState fetched status', status);
-        const wasStreaming = STATE.isStreaming;
-
-        STATE.buttReachable = true;
-        STATE.isStreaming = status.isStreaming ?? status.connected ?? status.running ?? false;
-        STATE.isMuted     = status.muted     ?? false;
-
-        updateIndicator('connected');
-
-        if (STATE.isStreaming && !wasStreaming) startTimer();
-        else if (!STATE.isStreaming && wasStreaming) stopTimer();
-    } catch {
-        STATE.buttReachable = false;
-        STATE.isStreaming    = false;
-        STATE.isMuted        = false;
-        updateIndicator('disconnected');
-        stopTimer();
-    }
-
-    updateMainButton();
-    updateMuteButton();
 }
 
 function init() {
-    detectTheme();
-    setInterval(detectTheme, 10000);
-
     DOM.mainButton.addEventListener('click', onMainButtonClick);
-    DOM.mainButton.addEventListener('dblclick', e => e.preventDefault());
-    DOM.muteButton.addEventListener('click', onMuteButtonClick);
     DOM.sendMetaButton.addEventListener('click', onSendMetaClick);
+    DOM.fbStartBtn.addEventListener('click', () => notifyFacebookLiveStatus('live'));
+    DOM.fbStopBtn.addEventListener('click', () => notifyFacebookLiveStatus('live_stopped'));
 
-    if (DOM.fbStartBtn) {
-        DOM.fbStartBtn.addEventListener('click', () => sendFacebookWebhook('live'));
-    }
-    if (DOM.fbStopBtn) {
-        DOM.fbStopBtn.addEventListener('click', () => sendFacebookWebhook('live_stopped'));
-    }
-
-    const sendOnEnter = e => { if (e.key === 'Enter') onSendMetaClick(); };
+    const sendOnEnter = event => {
+        if (event.key === 'Enter') onSendMetaClick();
+    };
     DOM.titleInput.addEventListener('keydown', sendOnEnter);
     DOM.artistInput.addEventListener('keydown', sendOnEnter);
 
-    syncState();
-    setInterval(syncState, CONFIG.POLL_INTERVAL_MS);
+    wireSettings();
+
+    // Drafts restore before anything renders so the fields never flash empty.
+    restoreDrafts(DRAFT_FIELDS);
+    wireDraftPersistence(DRAFT_FIELDS);
+
+    renderStatus();
+    renderMainButton();
+    poll();
+    loadSettings();
+    loadAgentConfigView();
 }
 
 init();

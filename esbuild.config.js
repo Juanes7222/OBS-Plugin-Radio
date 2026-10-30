@@ -1,31 +1,26 @@
 const esbuild = require('esbuild');
-const dotenv = require('dotenv');
-
-const env = dotenv.config().parsed || {};
-
-const define = {
-  'process.env.NODE_ENV': `"${process.env.NODE_ENV || 'production'}"`
-};
-
-for (const key in env) {
-  define[`process.env.${key}`] = JSON.stringify(env[key]);
-}
 
 const isWatch = process.argv.includes('--watch');
 
+/** @type {import('esbuild').BuildOptions} */
 const options = {
-  entryPoints: ['js/main.js'],
-  bundle: true,
-  outfile: 'dist/bundle.js',
-  format: 'iife',
-  define: define,
+    entryPoints: ['js/main.js'],
+    outfile: 'dist/bundle.js',
+    bundle: true,
+    format: 'iife',
+    // OBS loads this file from disk; minifying cuts parse time for free.
+    minify: !isWatch,
+    sourcemap: isWatch ? 'inline' : false,
+    legalComments: 'none',
 };
 
 if (isWatch) {
-  esbuild.context(options).then(ctx => {
-    ctx.watch();
-    console.log('Watching js/main.js for changes...');
-  }).catch(() => process.exit(1));
+    esbuild.context(options)
+        .then(async context => {
+            await context.watch();
+            console.log('Watching js/main.js for changes...');
+        })
+        .catch(() => process.exit(1));
 } else {
-  esbuild.build(options).catch(() => process.exit(1));
+    esbuild.build(options).catch(() => process.exit(1));
 }

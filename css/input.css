@@ -2,14 +2,92 @@
 @tailwind components;
 @tailwind utilities;
 
-#air-timer {
-    @apply opacity-30 transition-opacity duration-300;
+/* =============================================================================
+   La Voz de la Verdad — panel de emisión v3
+   Cool graphite surfaces, warm signals: amber = action/process,
+   green = link, red = on air and nothing else. Native browser surfaces
+   (scrollbars, selects, checks, selection) themed from the same palette.
+   ============================================================================= */
+
+:root {
+    color-scheme: dark;
 }
-#air-timer.visible {
-    @apply opacity-100;
+
+/* Native browser surfaces, themed (craft floor) */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #121417; }
+::-webkit-scrollbar-thumb { background: #2c3138; border: 2px solid #121417; border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: #3b414a; }
+
+::selection {
+    background: rgba(240, 180, 62, 0.3);
+    color: #ffffff;
 }
+
+input, textarea {
+    caret-color: #f0b43e;
+}
+
+.opt, option {
+    background-color: #1e2126;
+    color: #e8e4da;
+}
+
+/* ---- Modules --------------------------------------------------------------- */
+
+.module {
+    @apply rounded-2xl border border-white/[0.07] text-base-content;
+    background: linear-gradient(180deg, #1d2126, #171a1e);
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(232, 228, 218, 0.05);
+}
+
+.module-title {
+    @apply text-[13px] font-semibold;
+    color: rgba(232, 228, 218, 0.92);
+}
+
+/* Fluid module padding: the OBS dock viewport IS the window width */
+.module-content {
+    padding: 16px;
+}
+@media (max-width: 340px) {
+    .module-content {
+        padding: 12px;
+    }
+    .settings-summary {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+}
+
+/* Nothing may push the dock into a horizontal scrollbar */
+body {
+    overflow-x: hidden;
+}
+
+.field-label {
+    @apply block text-xs font-medium text-base-content/55 mt-1.5;
+}
+
+/* Status chip: small, centered, quiet; must never overflow the dock */
+.status-chip {
+    @apply inline-flex items-center gap-2 mx-auto px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.05] text-xs text-base-content/70 w-fit max-w-full;
+}
+
+#status-label {
+    @apply overflow-hidden text-ellipsis whitespace-nowrap min-w-0;
+}
+
+@media (max-width: 340px) {
+    .status-chip {
+        @apply text-[11px] px-2.5 py-1;
+    }
+}
+
 #status-dot {
-    @apply inline-block w-3 h-3 rounded-full mr-2;
+    @apply inline-block w-2 h-2 rounded-full shrink-0;
 }
 
 #status-indicator.connecting #status-dot {
@@ -20,27 +98,178 @@
     @apply bg-error animate-pulse;
 }
 
+#status-indicator.disconnected #status-label {
+    @apply text-error/90;
+}
+
 #status-indicator.connected #status-dot {
     @apply bg-success;
 }
 
-/* On-air bar effect from original CSS */
-#on-air-bar {
-    @apply h-2 w-full fixed top-0 left-0 z-50 transition-colors duration-500 ease-in-out;
+/* While on air the panel already says so (the paddle); the link chip stays quiet */
+#status-indicator.connected #status-label {
+    @apply text-base-content/55;
 }
-#on-air-bar.off-air { @apply bg-transparent; }
-#on-air-bar.on-air { @apply bg-error; box-shadow: 0 0 10px rgba(255, 0, 0, 0.8); }
 
-/* Main button icon and text */
-.btn-icon {
-    @apply inline-flex items-center transform transition-transform duration-300 text-2xl;
+/* ---- Studio amber: the action color (send, save, focus, wayfinding) ------- */
+
+.btn-amber {
+    @apply border-0 text-[#1a1305];
+    background-image: linear-gradient(180deg, #f3b64a, #dd9b25);
+    box-shadow:
+        0 6px 16px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    text-shadow: none;
 }
-.btn-connected .btn-icon {
-    @apply text-error;
+.btn-amber:hover {
+    background-image: linear-gradient(180deg, #f6bf5b, #e2a52e);
+}
+.btn-amber:disabled {
+    @apply opacity-50 shadow-none;
+    background-image: none;
+}
+
+.details-chev-open, .chev-transition { transition: color 200ms ease; }
+
+/* ---- Main paddle ----------------------------------------------------------- */
+
+/* Main paddle: fluid size for narrow docks */
+#main-button {
+    font-size: clamp(17px, 5.5vw, 20px);
+    height: clamp(52px, 14vw, 64px);
+}
+
+#main-button:not(:disabled) {
+    @apply border border-white/[0.08] text-base-content;
+    background-image: linear-gradient(180deg, #2a2f35, #1e2227);
+    box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+#main-button:not(:disabled):hover {
+    border-color: rgba(255, 255, 255, 0.14);
+    background-image: linear-gradient(180deg, #2f353c, #22262c);
+}
+#main-button:not(:disabled):active {
+    background-image: linear-gradient(180deg, #1e2227, #2a2f35);
+}
+
+#main-button:disabled {
+    @apply bg-[#1e2227] text-base-content/40 border border-white/[0.05] shadow-none;
+    background-image: none;
+}
+#main-button:disabled .btn-label,
+#main-button:disabled .btn-icon {
+    color: inherit;
+}
+
+/* Going live: the only orchestrated moment */
+#main-button.active {
+    color: #fff2f0;
+    background-image: linear-gradient(180deg, #e2332a, #b81f16);
+    box-shadow:
+        0 6px 22px rgba(226, 56, 47, 0.38),
+        inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+#main-button.active:hover {
+    background-image: linear-gradient(180deg, #e83d33, #c3271e);
+}
+
+.btn-icon {
+    @apply inline-flex items-center transform transition-transform duration-300;
+}
+#main-button.active .btn-icon {
     animation: pulse-soft 2s infinite;
+}
+#main-button:disabled .btn-icon {
+    animation: none;
 }
 
 @keyframes pulse-soft {
     0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.1); opacity: 0.8; }
+    50% { transform: scale(1.08); opacity: 0.85; }
+}
+
+/* ---- Air clock ------------------------------------------------------------- */
+
+.air-clock {
+    @apply flex items-center justify-center rounded-xl bg-black/35 border border-white/[0.05];
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.45);
+    padding: clamp(12px, 3.5vw, 16px) clamp(12px, 4vw, 18px);
+}
+
+.air-digits {
+    @apply leading-none tracking-[0.05em] tabular-nums text-base-content transition-opacity duration-300 font-mono;
+    font-size: clamp(23px, 8.5vw, 32px);
+    opacity: 0.55;
+}
+#air-timer.visible {
+    opacity: 1;
+    color: #f5f3ee;
+    text-shadow: 0 0 20px rgba(245, 243, 238, 0.18);
+}
+
+/* ---- Tally bar ------------------------------------------------------------- */
+
+#on-air-bar {
+    @apply h-1 w-full fixed top-0 left-0 z-50 transition-colors duration-500 ease-in-out;
+}
+#on-air-bar.off-air { @apply bg-transparent; }
+#on-air-bar.on-air {
+    @apply bg-gradient-to-r from-error to-[#ff6a5e];
+    box-shadow: 0 2px 12px rgba(226, 56, 47, 0.8);
+}
+
+/* ---- Forms ----------------------------------------------------------------- */
+
+.input-bordered,
+.select-bordered {
+    @apply bg-white/[0.04] border-white/[0.08] rounded-lg text-[13px];
+}
+.input-bordered::placeholder {
+    @apply text-base-content/45;
+}
+.input-bordered:focus,
+.select-bordered:focus {
+    @apply outline-none border-accent;
+    box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.12);
+}
+
+/* Settings drawer */
+.settings-summary {
+    @apply flex items-center justify-between px-4 py-3.5;
+    border-bottom: 1px solid transparent;
+}
+details[open] .settings-summary {
+    @apply border-white/[0.06];
+}
+details[open] .chev {
+    transform: rotate(90deg);
+    color: #f0b43e;
+}
+
+/* Checkboxes: dark regardless of CEF oklch support */
+.checkbox {
+    --chkbg: #f3b64a;
+    --chkbc: #1a1305;
+    @apply bg-white/[0.05] border-white/15;
+}
+.checkbox:checked {
+    @apply bg-[#f3b64a] border-[#f3b64a];
+}
+.checkbox:focus {
+    @apply border-accent;
+    box-shadow: 0 0 0 3px rgba(240, 180, 62, 0.2);
+}
+
+/* Ghost button echoes the amber on hover */
+.btn-ghost:hover {
+    @apply text-[#f0b43e] bg-white/[0.04];
+}
+
+/* ---- Reduced motion -------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    #main-button.active .btn-icon { animation: none; }
+    #status-dot { animation: none !important; }
+    #air-timer, #on-air-bar, .chev { transition: none; }
 }

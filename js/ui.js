@@ -1,68 +1,89 @@
-import { STATE, DOM } from './state.js';
+import { STATE } from './state.js';
+import { DOM } from './dom.js';
 
-export function updateIndicator(status) {
-    DOM.statusIndicator.classList.remove('connected', 'disconnected', 'connecting');
-    DOM.statusIndicator.classList.add(status);
-    const labels = {
-        connected:    'butt conectado',
-        disconnected: 'butt desconectado',
-        connecting:   'conectando...',
-    };
-    DOM.statusLabel.textContent = labels[status] ?? status;
+const ICON_PLAY = '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+const ICON_STOP = '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>';
+const ICON_BUSY = '<span class="loading loading-spinner loading-lg"></span>';
+
+const STATE_LABELS = {
+    idle: 'detenido',
+    starting: 'iniciando…',
+    live: 'en línea',
+    reconnecting: 'reconectando…',
+    error: 'error de transmisión',
+};
+
+// Last rendered value per surface: the panel polls every 2s and must not touch
+// the DOM (or restart CSS animations) when nothing changed.
+const rendered = { status: '', main: '', detail: '' };
+
+const statusTimers = new WeakMap();
+
+function connectionState() {
+    if (!STATE.agentOnline) return 'disconnected';
+    return STATE.streamState === 'live' ? 'connected' : 'connecting';
 }
 
-export function updateMainButton() {
-    const btn = DOM.mainButton;
-    btn.classList.remove('active', 'processing');
-    btn.disabled = STATE.isProcessing || !STATE.buttReachable;
+export function renderStatus() {
+    const connection = connectionState();
+    const label = connection === 'disconnected'
+        ? 'agente sin conexión'
+        : STATE_LABELS[STATE.streamState] ?? STATE.streamState;
+
+    const key = `${connection}|${label}`;
+    if (key !== rendered.status) {
+        rendered.status = key;
+        DOM.statusIndicator.classList.remove('connected', 'disconnected', 'connecting');
+        DOM.statusIndicator.classList.add(connection);
+        DOM.statusLabel.textContent = label;
+    }
+
+    const detail = STATE.agentOnline ? STATE.streamDetail ?? '' : '';
+    if (detail !== rendered.detail) {
+        rendered.detail = detail;
+        DOM.streamError.textContent = detail;
+        DOM.streamError.classList.toggle('hidden', detail === '');
+    }
+}
+
+export function renderMainButton() {
+    const live = STATE.streamState === 'live';
+    const connecting = STATE.streamState === 'starting' || STATE.streamState === 'reconnecting';
+
+    const key = `${STATE.isProcessing}|${STATE.streamState}|${STATE.agentOnline}`;
+    if (key === rendered.main) return;
+    rendered.main = key;
+
+    DOM.mainButton.disabled = STATE.isProcessing || !STATE.agentOnline;
+    DOM.mainButton.classList.toggle('active', live && !STATE.isProcessing);
 
     if (STATE.isProcessing) {
-        btn.classList.add('processing');
-        btn.querySelector('.btn-icon').innerHTML = '<span class="loading loading-spinner loading-lg"></span>';
-        btn.querySelector('.btn-label').textContent    = 'PROCESANDO';
-        if (btn.querySelector('.btn-sublabel')) {
-            btn.querySelector('.btn-sublabel').textContent = 'Espere...';
-        }
-        return;
-    }
-
-    if (STATE.isStreaming) {
-        btn.classList.add('active');
-        btn.querySelector('.btn-icon').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>';
-        btn.querySelector('.btn-label').textContent    = 'AL AIRE';
-        if (btn.querySelector('.btn-sublabel')) {
-            btn.querySelector('.btn-sublabel').textContent = 'Clic para detener';
-        }
+        DOM.mainIcon.innerHTML = ICON_BUSY;
+        DOM.mainLabel.textContent = 'PROCESANDO';
+    } else if (connecting) {
+        DOM.mainIcon.innerHTML = ICON_BUSY;
+        DOM.mainLabel.textContent = 'CONECTANDO';
+    } else if (live) {
+        DOM.mainIcon.innerHTML = ICON_STOP;
+        DOM.mainLabel.textContent = 'AL AIRE';
     } else {
-        btn.querySelector('.btn-icon').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
-        btn.querySelector('.btn-label').textContent    = 'INICIAR';
-        if (btn.querySelector('.btn-sublabel')) {
-            btn.querySelector('.btn-sublabel').textContent = 'Transmitir a AzuraCast';
-        }
+        DOM.mainIcon.innerHTML = ICON_PLAY;
+        DOM.mainLabel.textContent = 'INICIAR';
     }
 
-    DOM.onAirBar.classList.toggle('visible', STATE.isStreaming);
+    DOM.onAirBar.classList.toggle('on-air', live);
+    DOM.onAirBar.classList.toggle('off-air', !live);
 }
 
-export function updateMuteButton() {
-    DOM.muteButton.classList.toggle('muted', STATE.isMuted);
-    DOM.muteButton.textContent = STATE.isMuted ? 'SILENCIADO' : 'SILENCIAR';
-    DOM.muteButton.disabled    = !STATE.isStreaming || STATE.isProcessing;
-}
+/** Shows a temporary message in one of the panel's status lines. */
+export function showStatus(element, message, type = 'info') {
+    clearTimeout(statusTimers.get(element));
 
-export function showMetaStatus(message, type = 'normal') {
-    DOM.metaStatus.className   = `meta-status text-xs text-center block font-semibold ${type === 'error' ? 'text-error' : 'text-success'}`;
-    DOM.metaStatus.textContent = message;
-    setTimeout(() => { DOM.metaStatus.textContent = ''; DOM.metaStatus.className = 'meta-status hidden'; }, 3000);
-}
+    element.className = `meta-status text-xs text-center block font-semibold ${type === 'error' ? 'text-error' : 'text-success'}`;
+    element.textContent = message;
 
-export function showFbStatus(message, type = 'normal') {
-    if (!DOM.fbStatus) return;
-    DOM.fbStatus.className   = `meta-status text-xs text-center block font-semibold ${type === 'error' ? 'text-error' : 'text-success'}`;
-    DOM.fbStatus.textContent = message;
-    setTimeout(() => { DOM.fbStatus.textContent = ''; DOM.fbStatus.className = 'meta-status hidden'; }, 3000);
-}
-
-export function detectTheme() {
-    document.documentElement.setAttribute('data-theme', 'dark');
+    statusTimers.set(element, setTimeout(() => {
+        element.className = 'meta-status hidden';
+        element.textContent = '';
+    }, 4000));
 }

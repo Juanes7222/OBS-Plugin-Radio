@@ -1,58 +1,216 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="dark">
+<html lang="es" data-theme="console">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>La Voz de la Verdad — Panel de Control</title>
     <link rel="stylesheet" href="dist/output.css">
 </head>
-<body class="bg-base-300 min-h-screen p-3 font-sans text-base-content relative text-sm">
+<body class="bg-base-300 min-h-screen pb-6 px-3 pt-4 font-sans text-base-content relative text-sm">
     <div id="on-air-bar" class="off-air"></div>
 
-    <div id="app" class="max-w-md mx-auto space-y-4">
-        <!-- Status Indicator -->
-        <div id="status-indicator" class="disconnected flex items-center justify-center p-2 rounded-box bg-base-200 shadow-sm border border-base-100">
-            <span id="status-dot"></span>
-            <span id="status-label" class="font-medium text-xs tracking-wide">butt desconectado</span>
+    <div id="app" class="max-w-md mx-auto space-y-3">
+
+        <!-- Link state: a small centered chip -->
+        <div class="flex justify-center">
+            <header id="status-indicator" class="disconnected status-chip">
+                <span id="status-dot"></span>
+                <span id="status-label">conectando...</span>
+            </header>
         </div>
 
-        <!-- Main Button -->
-        <button id="main-button" disabled class="btn btn-primary btn-block h-16 text-xl font-bold shadow-lg shadow-base-300/50 flex items-center justify-center gap-2 transition-all rounded-box">
-            <span class="btn-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
-            <span class="btn-label">INICIAR</span>
-        </button>
+        <div id="stream-error" class="hidden text-[11px] text-center text-error font-semibold leading-snug px-2"></div>
 
-        <!-- Air Timer -->
-        <div id="air-timer-wrap" class="card bg-neutral text-neutral-content shadow-xl text-center p-3">
-            <span id="air-timer" class="font-mono text-3xl font-bold tracking-widest text-primary-content">00:00:00</span>
-        </div>
+        <!-- ON AIR module: the hero -->
+        <section id="air-module" class="module">
+            <div class="module-content space-y-3">
+                <button id="main-button" disabled class="btn btn-primary btn-block h-16 border-0 rounded-2xl text-xl font-semibold tracking-[0.08em] flex items-center justify-center gap-3 transition-colors">
+                    <span class="btn-icon"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+                    <span class="btn-label">INICIAR</span>
+                </button>
 
-        <!-- Mute Button -->
-        <button id="mute-button" disabled class="btn btn-sm btn-outline btn-block rounded-box text-sm font-bold">SILENCIAR</button>
-
-        <div class="divider my-1 text-xs opacity-50">Configuración</div>
+                <!-- Air clock: display window; the digits' backlight IS the live state -->
+                <div id="air-clock" class="air-clock">
+                    <span id="air-timer" class="air-digits font-mono">00:00:00</span>
+                </div>
+            </div>
+        </section>
 
         <!-- Meta Panel -->
-        <div id="meta-panel" class="card bg-base-200 shadow-xl p-4 space-y-2 border border-base-100">
-            <span class="meta-label text-[10px] uppercase font-bold text-base-content/70 tracking-wider">Metadatos</span>
-            <input id="meta-title" type="text" placeholder="Título" autocomplete="off" class="input input-sm input-bordered w-full" />
-            <input id="meta-artist" type="text" placeholder="Artista" autocomplete="off" class="input input-sm input-bordered w-full" />
-            <button id="send-meta" class="btn btn-sm btn-secondary w-full">Enviar Metadatos</button>
-            <span id="meta-status" class="meta-status text-xs text-center block text-success hidden">Enviado con éxito</span>
-        </div>
+        <section class="module">
+            <div class="module-content space-y-2.5">
+                <h2 class="module-title">Metadatos</h2>
+                <input id="meta-title" type="text" placeholder="Título" autocomplete="off" class="input input-sm input-bordered w-full" />
+                <input id="meta-artist" type="text" placeholder="Artista" autocomplete="off" class="input input-sm input-bordered w-full" />
+                <button id="send-meta" class="btn btn-sm btn-amber w-full rounded-xl border-0">Enviar metadatos</button>
+                <span id="meta-status" class="meta-status text-xs text-center block text-success hidden">Enviado con éxito</span>
+            </div>
+        </section>
 
         <!-- Facebook Panel -->
-        <div id="fb-panel" class="card bg-base-200 shadow-xl p-4 space-y-2 border border-base-100">
-            <span class="meta-label text-[10px] uppercase font-bold text-base-content/70 tracking-wider">Facebook Live Webhook</span>
-            <input id="fb-url" type="text" placeholder="URL del video (permalink_url)" autocomplete="off" class="input input-sm input-bordered w-full" />
-            <div class="flex gap-2">
-                <button id="fb-start" class="btn btn-sm btn-success flex-1 text-white text-xs">Notificar Live</button>
-                <button id="fb-stop" class="btn btn-sm btn-error flex-1 text-white text-xs">Notificar Fin</button>
+        <section class="module">
+            <div class="module-content space-y-2.5">
+                <h2 class="module-title">Facebook Live</h2>
+                <input id="fb-url" type="text" placeholder="URL del video" autocomplete="off" class="input input-sm input-bordered w-full text-xs" />
+                <div class="flex gap-2">
+                    <button id="fb-start" class="btn btn-sm btn-amber flex-1 rounded-xl border-0 text-xs">Notificar inicio</button>
+                    <button id="fb-stop" class="btn btn-sm btn-amber flex-1 rounded-xl border-0 text-xs">Notificar fin</button>
+                </div>
+                <span id="fb-status" class="meta-status text-xs text-center block text-success hidden"></span>
             </div>
-            <span id="fb-status" class="meta-status text-xs text-center block text-success hidden"></span>
-        </div>
-    </div>
+        </section>
 
+        <!-- Runtime configuration: engine, target and paths -->
+        <details id="agent-panel" class="module">
+            <summary class="settings-summary cursor-pointer select-none list-none">
+                <span class="module-title">Servidor y motor</span>
+                <svg class="chev w-4 h-4 text-base-content/40 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+            </summary>
+            <div class="module-content pt-0 space-y-2.5">
+                <span id="agent-hint" class="block text-[11px] opacity-70 leading-snug"></span>
+
+                <label class="field-label">
+                    Motor de streaming
+                    <select id="cfg-engine" class="select select-sm select-bordered w-full mt-1">
+                        <option value="ffmpeg">ffmpeg (recomendado)</option>
+                        <option value="butt">butt (heredado)</option>
+                    </select>
+                </label>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <label class="field-label">
+                        Puerto
+                        <input id="cfg-port" type="number" min="1" max="65535" autocomplete="off" class="input input-sm input-bordered w-full mt-1" />
+                    </label>
+                    <label class="field-label">
+                        Mount
+                        <input id="cfg-mount" type="text" placeholder="/" autocomplete="off" class="input input-sm input-bordered w-full mt-1" />
+                    </label>
+                </div>
+
+                <label class="field-label">
+                    Host del servidor
+                    <input id="cfg-host" type="text" placeholder="radio.example.com" autocomplete="off" class="input input-sm input-bordered w-full mt-1" />
+                </label>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <label class="field-label">
+                        Usuario fuente
+                        <input id="cfg-user" type="text" placeholder="source" autocomplete="off" class="input input-sm input-bordered w-full mt-1" />
+                    </label>
+                    <label class="field-label">
+                        Contraseña
+                        <input id="cfg-password" type="password" autocomplete="new-password" class="input input-sm input-bordered w-full mt-1" />
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <label class="field-label">
+                        Ruta de ffmpeg
+                        <input id="cfg-ffmpeg" type="text" placeholder="ffmpeg" autocomplete="off" class="input input-sm input-bordered w-full mt-1" />
+                    </label>
+                    <label class="field-label">
+                        Ruta de butt.exe
+                        <input id="cfg-butt" type="text" placeholder="C:/Program Files/butt/butt.exe" autocomplete="off" class="input input-sm input-bordered w-full mt-1" />
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <label class="field-label">
+                        Nombre del stream
+                        <input id="cfg-name" type="text" autocomplete="off" class="input input-sm input-bordered w-full mt-1" />
+                    </label>
+                    <label class="field-label">
+                        Género
+                        <input id="cfg-genre" type="text" autocomplete="off" class="input input-sm input-bordered w-full mt-1" />
+                    </label>
+                </div>
+
+                <label class="field-label">
+                    Sitio web
+                    <input id="cfg-website" type="text" placeholder="https://" autocomplete="off" class="input input-sm input-bordered w-full mt-1" />
+                </label>
+
+                <label class="field-label">
+                    Backend (metadatos y webhooks)
+                    <input id="cfg-backend-url" type="text" placeholder="https://" autocomplete="off" class="input input-sm input-bordered w-full mt-1" />
+                </label>
+                <label class="field-label">
+                    Secreto del backend
+                    <input id="cfg-backend-secret" type="password" autocomplete="new-password" class="input input-sm input-bordered w-full mt-1" />
+                </label>
+
+                <div class="flex flex-wrap gap-4 pt-1">
+                    <label class="flex items-center gap-2 text-xs">
+                        <input id="cfg-tls" type="checkbox" class="checkbox checkbox-xs" />
+                        TLS en la conexión
+                    </label>
+                    <label class="flex items-center gap-2 text-xs">
+                        <input id="cfg-public" type="checkbox" class="checkbox checkbox-xs" />
+                        Anunciar como público
+                    </label>
+                </div>
+
+                <button id="save-agent-config" class="btn btn-sm btn-amber w-full rounded-xl border-0">Guardar configuración</button>
+                <span id="agent-status" class="meta-status text-xs text-center block text-success hidden"></span>
+            </div>
+        </details>
+
+        <!-- Stream engine settings (only shown with STREAM_ENGINE=ffmpeg) -->
+        <details id="settings-panel" hidden class="module">
+            <summary class="settings-summary cursor-pointer select-none list-none">
+                <span class="module-title">Dispositivo y calidad</span>
+                <svg class="chev w-4 h-4 text-base-content/40 transition-transform duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+            </summary>
+            <div class="module-content pt-0 space-y-2.5">
+                <span id="settings-hint" class="block text-[11px] opacity-70 leading-snug"></span>
+
+                <label class="field-label">
+                    Dispositivo de entrada
+                    <select id="stream-device" class="select select-sm select-bordered w-full mt-1"></select>
+                </label>
+                <button id="refresh-devices" class="btn btn-xs btn-ghost rounded-lg">Actualizar lista</button>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <label class="field-label">
+                        Códec
+                        <select id="stream-codec" class="select select-sm select-bordered w-full mt-1">
+                            <option value="mp3">MP3</option>
+                            <option value="opus">Opus</option>
+                        </select>
+                    </label>
+                    <label class="field-label">
+                        Bitrate
+                        <select id="stream-bitrate" class="select select-sm select-bordered w-full mt-1">
+                            <option value="96">96 kbps</option>
+                            <option value="128">128 kbps</option>
+                            <option value="160">160 kbps</option>
+                            <option value="192">192 kbps</option>
+                            <option value="256">256 kbps</option>
+                        </select>
+                    </label>
+                    <label class="field-label">
+                        Canales
+                        <select id="stream-channels" class="select select-sm select-bordered w-full mt-1">
+                            <option value="2">Estéreo</option>
+                            <option value="1">Mono</option>
+                        </select>
+                    </label>
+                    <label class="field-label">
+                        Ganancia (dB)
+                        <input id="stream-gain" type="number" min="-20" max="20" step="0.5" value="0" autocomplete="off" class="input input-sm input-bordered w-full mt-1" />
+                    </label>
+                </div>
+
+                <label class="field-label">
+                    Mount
+                    <input id="stream-mount" type="text" placeholder="/stream" autocomplete="off" class="input input-sm input-bordered w-full mt-1" />
+                </label>
+
+                <button id="save-settings" class="btn btn-sm btn-amber w-full rounded-xl border-0">Guardar y aplicar</button>
+            </div>
+        </details>
+    </div>
 
     <script src="dist/bundle.js"></script>
 </body>
