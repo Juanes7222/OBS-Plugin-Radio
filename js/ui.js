@@ -19,16 +19,22 @@ const rendered = { status: '', main: '', detail: '' };
 
 const statusTimers = new WeakMap();
 
+/** A stream the station is not airing is not a working connection. */
+const isOffAir = () => STATE.streamState === 'live' && STATE.airing === false;
+
 function connectionState() {
     if (!STATE.agentOnline) return 'disconnected';
-    return STATE.streamState === 'live' ? 'connected' : 'connecting';
+    if (STATE.streamState !== 'live') return 'connecting';
+    return isOffAir() ? 'connecting' : 'connected';
 }
 
 export function renderStatus() {
     const connection = connectionState();
     const label = connection === 'disconnected'
         ? 'agente sin conexión'
-        : STATE_LABELS[STATE.streamState] ?? STATE.streamState;
+        : isOffAir()
+            ? 'sin aire en la emisora'
+            : STATE_LABELS[STATE.streamState] ?? STATE.streamState;
 
     const key = `${connection}|${label}`;
     if (key !== rendered.status) {
@@ -50,7 +56,7 @@ export function renderMainButton() {
     const live = STATE.streamState === 'live';
     const connecting = STATE.streamState === 'starting' || STATE.streamState === 'reconnecting';
 
-    const key = `${STATE.isProcessing}|${STATE.streamState}|${STATE.agentOnline}`;
+    const key = `${STATE.isProcessing}|${STATE.streamState}|${STATE.agentOnline}|${STATE.airing}`;
     if (key === rendered.main) return;
     rendered.main = key;
 
@@ -63,6 +69,9 @@ export function renderMainButton() {
     } else if (connecting) {
         DOM.mainIcon.innerHTML = ICON_BUSY;
         DOM.mainLabel.textContent = 'CONECTANDO';
+    } else if (live && STATE.airing === false) {
+        DOM.mainIcon.innerHTML = ICON_STOP;
+        DOM.mainLabel.textContent = 'SIN AIRE';
     } else if (live) {
         DOM.mainIcon.innerHTML = ICON_STOP;
         DOM.mainLabel.textContent = 'AL AIRE';

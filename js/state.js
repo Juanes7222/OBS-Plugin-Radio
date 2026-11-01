@@ -4,6 +4,9 @@ export const STATE = {
     // idle | starting | live | reconnecting | error
     streamState: 'idle',
     streamDetail: null,
+    // null while unknown: sending audio is not the same as being on air, and
+    // only the station can confirm the second one.
+    airing: null,
     engine: null,
     configured: true,
     // True while an action is in flight; locks the controls so clicks cannot

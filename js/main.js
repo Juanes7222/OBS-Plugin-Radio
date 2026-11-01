@@ -22,6 +22,7 @@ function applyStatus(status) {
     STATE.agentOnline = true;
     STATE.streamState = status.state ?? 'idle';
     STATE.streamDetail = status.detail ?? null;
+    STATE.airing = typeof status.airing === 'boolean' ? status.airing : null;
     STATE.engine = status.engine ?? STATE.engine;
     STATE.configured = status.configured !== false;
 
@@ -35,6 +36,7 @@ function applyOffline() {
     STATE.agentOnline = false;
     STATE.streamState = 'idle';
     STATE.streamDetail = null;
+    STATE.airing = null;
 
     syncTimer(false);
     renderStatus();
